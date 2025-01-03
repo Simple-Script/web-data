@@ -1,0 +1,30 @@
+import base64
+from github import Github
+
+# Replace with your GitHub credentials
+username = "your_username"
+password = "your_password"
+
+# Or, use a personal access token
+# g = Github("your_personal_access_token")
+
+g = Github(username, password)
+
+# Replace with your repository details
+repo_name = "your_repo_name"
+repo = g.get_user().get_repo(repo_name)
+
+# File path in your local system
+file_path = "path/to/your/file.txt"
+
+# Read the file content
+with open(file_path, "r") as file:
+    file_content = file.read()
+
+# Add the file to the repository
+repo.create_file(
+    "path/to/file/in/repo.txt",  # Path in the repository
+    "Commit message",  # Commit message
+    file_content,  # File content
+    branch="main"  # Branch to add the file to
+)
