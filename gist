@@ -1,0 +1,40 @@
+import requests
+import json
+
+# Replace with your GitHub personal access token
+GITHUB_TOKEN = 'your_personal_access_token'
+# Gist ID to update, or None to create a new Gist
+GIST_ID = None  # Change this to your Gist ID if updating
+# Gist content
+gist_content = {
+    "description": "Example Gist",
+    "public": True,
+    "files": {
+        "example.txt": {
+            "content": "This is an example content for the Gist."
+        }
+    }
+}
+
+# Set the headers for authentication
+headers = {
+    'Authorization': f'token {GITHUB_TOKEN}',
+    'Accept': 'application/vnd.github.v3+json'
+}
+
+# Create or update the Gist
+if GIST_ID:
+    # Update existing Gist
+    url = f'https://api.github.com/gists/{GIST_ID}'
+    response = requests.patch(url, headers=headers, data=json.dumps(gist_content))
+else:
+    # Create new Gist
+    url = 'https://api.github.com/gists'
+    response = requests.post(url, headers=headers, data=json.dumps(gist_content))
+
+# Check the response
+if response.status_code in [200, 201]:
+    print("Gist created/updated successfully!")
+    print("Gist URL:", response.json().get('html_url'))
+else:
+    print("Failed to create/update Gist:", response.status_code, response.text)
