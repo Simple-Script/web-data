@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create or Update Gist</title>
+</head>
+<body>
+    <h1>Create or Update a GitHub Gist</h1>
+    <form id="gistForm">
+        <label for="gistId">Gist ID (leave blank to create a new Gist):</label><br>
+        <input type="text" id="gistId" placeholder="Gist ID"><br><br>
+        
+        <label for="description">Description:</label><br>
+        <input type="text" id="description" required><br><br>
+        
+        <label for="content">Content:</label><br>
+        <textarea id="content" required></textarea><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('gistForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const gistId = document.getElementById('gistId').value;
+            const description = document.getElementById('description').value;
+            const content = document.getElementById('content').value;
+            const token = 'your_personal_access_token'; // Replace with your GitHub token
+            
+            const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+            const method = gistId ? 'PATCH' : 'POST';
+            
+            const gistData = {
+                description: description,
+                public: true,
+                files: {
+                    "example.txt": {
+                        content: content
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(gistData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('result').innerHTML = `Gist created/updated successfully! <a href="${result.html_url}" target="_blank">View Gist</a>`;
+                } else {
+                    const error = await response.json();
+                    document.getElementById('result').innerHTML = `Error: ${error.message}`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Network Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
