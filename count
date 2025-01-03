@@ -1,0 +1,29 @@
+from collections import Counter
+
+def count_characters(input_string):
+    # Initialize counters for letters and numbers
+    letter_count = Counter()
+    number_count = Counter()
+
+    # Iterate through each character in the input string
+    for char in input_string:
+        if char.isalpha():  # Check if the character is a letter
+            letter_count[char] += 1
+        elif char.isdigit():  # Check if the character is a number
+            number_count[char] += 1
+
+    return letter_count, number_count
+
+def display_counts(letter_count, number_count):
+    print("Letter Counts:")
+    for letter, count in letter_count.items():
+        print(f"{letter}: {count}")
+
+    print("\nNumber Counts:")
+    for number, count in number_count.items():
+        print(f"{number}: {count}")
+
+if __name__ == "__main__":
+    input_string = input("Enter a string: ")
+    letter_count, number_count = count_characters(input_string)
+    display_counts(letter_count, number_count)
