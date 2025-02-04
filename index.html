@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image to GitHub</title>
+    <style>
+        .drop-zone {
+            width: 80%;
+            height: 300px;
+            border: 2px dashed #007BFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
+        .drop-zone.dragover {
+            background-color: #f1f1f1;
+        }
+        .drop-zone p {
+            font-size: 18px;
+            color: #007BFF;
+        }
+        #image-links-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Upload Image to GitHub</h1>
+
+    <div class="drop-zone" id="drop-zone">
+        <p>Drag & Drop your image here</p>
+    </div>
+
+    <div id="image-links-container">
+        <h3>Your Image Links</h3>
+        <ul id="image-links-list"></ul>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById("drop-zone");
+        const imageLinksList = document.getElementById("image-links-list");
+
+        const username = 'Simple-Script';  // Replace with your username
+        const repo = 'web-data';  // Replace with your repo name
+        const token = 'your_github_token';  // Replace with your personal access token
+        const branch = 'main';  // Replace with your branch name
+
+        // Function to upload the image to GitHub
+        async function uploadToGitHub(file) {
+            const filePath = `images/${file.name}`;
+            const url = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
+
+            // Convert the file to a base64-encoded string
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = async function() {
+                const base64Content = reader.result.split(',')[1]; // Remove data:image part
+
+                const data = {
+                    message: `Upload ${file.name}`,
+                    content: base64Content,
+                    branch: branch
+                };
+
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const imageUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${filePath}`;
+                    alert('File uploaded successfully! Here is the raw image link:');
+                    addImageLink(imageUrl);
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.message);
+                }
+            };
+        }
+
+        // Function to handle the image drop
+        dropZone.addEventListener("drop", function(event) {
+            event.preventDefault();
+            dropZone.classList.remove("dragover");
+
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith("image/")) {
+                uploadToGitHub(file);
+            } else {
+                alert('Please upload a valid image file.');
+            }
+        });
+
+        // Handle dragover and dragleave events for styling
+        dropZone.addEventListener("dragover", function(event) {
+            event.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+
+        dropZone.addEventListener("dragleave", function() {
+            dropZone.classList.remove("dragover");
+        });
+
+        // Function to add the image link to the list and save it in localStorage
+        function addImageLink(url) {
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
+            imageLinksList.appendChild(listItem);
+
+            let imageLinks = JSON.parse(localStorage.getItem('imageLinks')) || [];
+            imageLinks.push(url);
+            localStorage.setItem('imageLinks', JSON.stringify(imageLinks));
+        }
+
+        // Load and display image links from localStorage on page load
+        window.onload = function() {
+            let imageLinks = JSON.parse(localStorage.getItem('imageLinks')) || [];
+            imageLinks.forEach(url => addImageLink(url));
+        };
+    </script>
+
+</body>
+</html>
